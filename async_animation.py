@@ -65,7 +65,7 @@ def get_moving(route, move, ship_size, max_coord):
         return route + move
     elif route + move < 0:
         return 0
-    elif route + move > max_coord:
+    else:
         return max_coord - ship_size
 
 
@@ -91,9 +91,8 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
 def draw(canvas):
     canvas.nodelay(True)
     curses.curs_set(False)
-    max_coords = canvas.getmaxyx()
-    max_row, max_column = max_coords[0] - 1, max_coords[1] - 1
-    fire_coroutine = fire(canvas, int(max_row), int(max_column / 2))
+    max_row, max_column = canvas.getmaxyx()
+    fire_coroutine = fire(canvas, int(max_row - 1), int(max_column / 2))
 
     spaceship_start_row = int(max_row / 2)
     spaceship_start_column = int(max_column / 2)
@@ -104,7 +103,7 @@ def draw(canvas):
     for star in range(STARS_COUNT):
         star_symbol = choice(STARS_SYMBOLS)
         star_blink = randint(1, 20)
-        coroutine = blink(canvas, randint(1, max_row), randint(1, max_column), star_blink, star_symbol)
+        coroutine = blink(canvas, randint(1, max_row - 1), randint(1, max_column - 1), star_blink, star_symbol)
         coroutines.append(coroutine)
 
     while True:
