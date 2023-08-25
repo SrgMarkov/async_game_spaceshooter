@@ -60,15 +60,6 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         column += columns_speed
 
 
-def get_moving(route, move, ship_size, max_coord):
-    if 0 <= route + move <= max_coord - ship_size:
-        return route + move
-    elif route + move < 0:
-        return 0
-    else:
-        return max_coord - ship_size
-
-
 async def animate_spaceship(canvas, row, column, max_row, max_column):
     with open('animation/rocket_frame_1.txt', 'r') as rocket_frame_1:
         frame_1 = rocket_frame_1.read()
@@ -76,14 +67,15 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
         frame_2 = rocket_frame_2.read()
 
     ship_size_row, ship_size_column = get_frame_size(frame_1)
+    max_row -= ship_size_row
+    max_column -= ship_size_column
     frames = [[frame_1, frame_2], [frame_2, frame_1]]
 
     for frame in cycle(frames):
-        row_move, column_move, space_press = read_controls(canvas)
-
         draw_frame(canvas, row, column, frame[0], negative=True)
-        row = get_moving(row, row_move, ship_size_row, max_row)
-        column = get_moving(column, column_move, ship_size_column, max_column)
+        row_move, column_move, space_press = read_controls(canvas)
+        row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
+        column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
         draw_frame(canvas, row, column, frame[1])
         await asyncio.sleep(0)
 
