@@ -8,24 +8,27 @@ from curses_tools import draw_frame, read_controls, get_frame_size
 
 TIC_TIMEOUT = 0.1
 STARS_SYMBOLS = ['+', '*', '.', ':']
-STARS_COUNT = 200
+STARS_COUNT = 100
 
 
 async def blink(canvas, row, column, offset_tics, symbol='*'):
+    while offset_tics:
+        offset_tics -= 1
+        await asyncio.sleep(0)
     while True:
-        for tic in range(offset_tics):
+        for tic in range(20):
             canvas.addstr(row, column, symbol, curses.A_DIM)
             await asyncio.sleep(0)
 
-        for tic in range(offset_tics):
+        for tic in range(3):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
 
-        for tic in range(offset_tics):
+        for tic in range(5):
             canvas.addstr(row, column, symbol, curses.A_BOLD)
             await asyncio.sleep(0)
 
-        for tic in range(offset_tics):
+        for tic in range(3):
             canvas.addstr(row, column, symbol)
             await asyncio.sleep(0)
 
@@ -72,9 +75,9 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
     frames = [[frame_1, frame_2], [frame_1, frame_2]]
 
     for frame in cycle(frames):
+        row_move, column_move, space_press = read_controls(canvas)
         for game_cycle in range(2):
             draw_frame(canvas, row, column, frame[0], negative=True)
-            row_move, column_move, space_press = read_controls(canvas)
             row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
             column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
             draw_frame(canvas, row, column, frame[1])
@@ -98,8 +101,8 @@ def draw(canvas):
 
     for star in range(STARS_COUNT):
         star_symbol = choice(STARS_SYMBOLS)
-        star_blink = randint(1, 20)
-        coroutine = blink(canvas, randint(1, max_row - 1), randint(1, max_column - 1), star_blink, star_symbol)
+        star_append = randint(0, 20)
+        coroutine = blink(canvas, randint(1, max_row - 1), randint(1, max_column - 1), star_append, star_symbol)
         coroutines.append(coroutine)
 
     while True:
