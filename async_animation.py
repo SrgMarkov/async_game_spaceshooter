@@ -72,19 +72,16 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
     ship_size_row, ship_size_column = get_frame_size(frame_1)
     max_row -= ship_size_row
     max_column -= ship_size_column
-    frames = [[frame_1, frame_2], [frame_1, frame_2]]
+    frames = [frame_1, frame_2]
 
     for frame in cycle(frames):
-        row_move, column_move, space_press = read_controls(canvas)
         for game_cycle in range(2):
-            draw_frame(canvas, row, column, frame[0], negative=True)
+            row_move, column_move, space_press = read_controls(canvas)
             row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
             column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
-            draw_frame(canvas, row, column, frame[1])
+            draw_frame(canvas, row, column, frame)
             await asyncio.sleep(0)
-            draw_frame(canvas, row, column, frame[1], negative=True)
-            draw_frame(canvas, row, column, frame[0])
-            await asyncio.sleep(0)
+            draw_frame(canvas, row, column, frame, negative=True)
 
 
 def draw(canvas):
