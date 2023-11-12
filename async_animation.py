@@ -4,15 +4,18 @@ import time
 from itertools import cycle
 from random import randint, choice
 
+from explosion import explode
 from curses_tools import draw_frame, read_controls, get_frame_size
+from obstacles import Obstacle, has_collision, show_obstacles
 from physics import update_speed
 
 
 TIC_TIMEOUT = 0.1
 STARS_SYMBOLS = ['+', '*', '.', ':']
 STARS_COUNT = 100
-
 COROUTINES = []
+OBSTACLES = []
+OBSTACLES_IN_LAST_COLLISIONS = []
 
 
 async def sleep(tics=1):
@@ -63,6 +66,9 @@ async def fire(canvas, start_row, start_column,
     curses.beep()
 
     while 0 < row < max_row and 0 < column < max_column:
+        for obstacle in OBSTACLES:
+            if obstacle.has_collision(row, column):
+                return OBSTACLES_IN_LAST_COLLISIONS.append(obstacle)
         canvas.addstr(round(row), round(column), symbol)
         await asyncio.sleep(0)
         canvas.addstr(round(row), round(column), ' ')
@@ -83,15 +89,21 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
     max_row -= ship_size_row
     max_column -= ship_size_column
     frames = [frame_1, frame_2]
+    row_speed = column_speed = 0
 
     for frame in cycle(frames):
+        row_move, column_move, space_press = read_controls(canvas)
         for game_cycle in range(2):
-            row_move, column_move, space_press = read_controls(canvas)
-            row = max(0, row + row_move) if row_move < 0 else \
-                min(row + row_move, max_row)
-            column = max(0, column + column_move) if column_move < 0 else \
-                min(column + column_move, max_column)
+            row_speed, column_speed = update_speed(row_speed, column_speed, row_move, column_move)
+            row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
+            column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
+            if space_press:
+                shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
+                COROUTINES.append(shoot)
+
+            row, column = row + row_speed, column + column_speed
             draw_frame(canvas, row, column, frame)
+
             await asyncio.sleep(0)
             draw_frame(canvas, row, column, frame, negative=True)
 
@@ -105,9 +117,15 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     row = 0
 
     while row < rows_number:
+        garbage_size_row, garbage_size_column = get_frame_size(garbage_frame)
         draw_frame(canvas, row, column, garbage_frame)
+        obstacle = Obstacle(row, column, garbage_size_row, garbage_size_column)
+        OBSTACLES.append(obstacle)
         await sleep()
         draw_frame(canvas, row, column, garbage_frame, negative=True)
+        if obstacle in OBSTACLES_IN_LAST_COLLISIONS:
+            await explode(canvas, row, column)
+            return OBSTACLES_IN_LAST_COLLISIONS.remove(obstacle)
         row += speed
 
 
@@ -128,7 +146,7 @@ async def fill_orbit_with_garbage(canvas, max_column):
         garbage_frames.append(garbage_file.read())
     with open('animation/trash_xl.txt', "r") as garbage_file:
         garbage_frames.append(garbage_file.read())
-    global COROUTINES
+
     while True:
         garbage_frame = choice(garbage_frames)
         COROUTINES.append(fly_garbage(canvas, randint(0, max_column),
@@ -159,6 +177,8 @@ def draw(canvas):
         coroutine = blink(canvas, randint(1, max_row - 1),
                           randint(1, max_column - 1), star_append, star_symbol)
         COROUTINES.append(coroutine)
+
+    COROUTINES.append(show_obstacles(canvas, OBSTACLES))
 
     while True:
         for coroutine in COROUTINES.copy():

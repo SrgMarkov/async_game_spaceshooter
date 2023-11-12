@@ -6,7 +6,7 @@ DOWN_KEY_CODE = 258
 
 
 def read_controls(canvas):
-    """Read keys pressed and returns tuple witl controls state."""
+    """Read keys pressed and returns tuple with controls state."""
 
     rows_direction = columns_direction = 0
     space_pressed = False
@@ -75,6 +75,3 @@ def get_frame_size(text):
     rows = len(lines)
     columns = max([len(line) for line in lines])
     return rows, columns
-
-
-
