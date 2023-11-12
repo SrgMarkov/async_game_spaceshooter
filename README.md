@@ -2,6 +2,8 @@
 
 Ламповая игра в терминале, на тему загрязнения космического пространства.
 
+<img width="600" alt="Game_Screenshot" src="https://github.com/SrgMarkov/space_game/assets/107784915/09fab2a1-7a92-4083-a30b-5fce164f505d">
+
 ## Как запустить игру
 
 Скачайте код:
@@ -33,5 +35,8 @@ python3 async_animation.py
 
 В случае столкновения с мусором - игра окончена!
 
+<img width="600" alt="Game_over_Screenshot" src="https://github.com/SrgMarkov/space_game/assets/107784915/107134a3-d321-4b84-9141-2081aaaa831a">
+
 ### Цель проекта
 Написан для изучения асинхронного программирования на python, курсы [Devman](https://dvmn.org/)
+
