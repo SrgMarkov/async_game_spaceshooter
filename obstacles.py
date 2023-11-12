@@ -34,10 +34,10 @@ class Obstacle:
 
 
 def _get_bounding_box_lines(rows, columns):
-    yield ' ' + ' ' * columns + ' '
+    yield ' ' + '-' * columns + ' '
     for _ in range(rows):
-        yield ' ' + ' ' * columns + ' '
-    yield ' ' + ' ' * columns + ' '
+        yield '|' + ' ' * columns + '|'
+    yield ' ' + '-' * columns + ' '
 
 
 async def show_obstacles(canvas, obstacles):
