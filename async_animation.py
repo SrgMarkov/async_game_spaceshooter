@@ -7,7 +7,7 @@ from random import randint, choice
 from curses_tools import draw_frame, read_controls, get_frame_size
 from explosion import explode
 from game_scenario import get_garbage_delay_tics, PHRASES
-from obstacles import Obstacle,  show_obstacles
+from obstacles import Obstacle
 from physics import update_speed
 
 
@@ -31,9 +31,7 @@ async def blink(canvas, row, column, offset_tics, symbol='*'):
     """
     Blink star symbol on screen.
     """
-    while offset_tics:
-        offset_tics -= 1
-        await asyncio.sleep(0)
+    await sleep(offset_tics)
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
         await sleep(20)
