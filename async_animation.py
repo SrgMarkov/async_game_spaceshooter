@@ -1,5 +1,6 @@
 import asyncio
 import curses
+import os
 import time
 from itertools import cycle
 from random import randint, choice
@@ -7,7 +8,7 @@ from random import randint, choice
 from curses_tools import draw_frame, read_controls, get_frame_size
 from explosion import explode
 from game_scenario import get_garbage_delay_tics, PHRASES
-from obstacles import Obstacle
+from obstacles import Obstacle, show_obstacles
 from physics import update_speed
 
 
@@ -149,19 +150,10 @@ async def fill_orbit_with_garbage(canvas, max_column):
     Fill orbit with garbage.
     """
     garbage_frames = []
-    with open('animation/duck.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-    with open('animation/hubble.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-    with open('animation/lamp.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-    with open('animation/trash_large.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-    with open('animation/trash_small.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-    with open('animation/trash_xl.txt', "r") as garbage_file:
-        garbage_frames.append(garbage_file.read())
-
+    trash_frames = os.listdir('animation/trash_frames')
+    for trash_frame in trash_frames:
+        with open(f'animation/trash_frames/{trash_frame}', 'r') as garbage_file:
+            garbage_frames.append(garbage_file.read())
     while True:
         garbage_delay_tics = get_garbage_delay_tics(YEAR)
         if garbage_delay_tics:
@@ -215,6 +207,8 @@ def draw(canvas):
         coroutine = blink(canvas, randint(1, max_row - 1),
                           randint(1, max_column - 1), star_append, star_symbol)
         COROUTINES.append(coroutine)
+
+    COROUTINES.append(show_obstacles(canvas, OBSTACLES))
 
     while True:
         for coroutine in COROUTINES.copy():
