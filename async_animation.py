@@ -103,13 +103,7 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
             column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
 
             for obstacle in OBSTACLES:
-                spaceship_coords = [
-                    obstacle.has_collision(row, column),
-                    obstacle.has_collision(row + ship_size_row, column),
-                    obstacle.has_collision(row, column + ship_size_column),
-                    obstacle.has_collision(row + ship_size_row, column + ship_size_column)
-                ]
-                if any(spaceship_coords):
+                if obstacle.has_collision(row, column, ship_size_row, ship_size_column):
                     await explode(canvas, row, column)
                     await show_gameover(canvas, center_row, center_column)
                     return OBSTACLES_IN_LAST_COLLISIONS.remove(obstacle)
