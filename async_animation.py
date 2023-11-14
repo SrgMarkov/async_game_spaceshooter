@@ -98,24 +98,24 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
 
     for frame in cycle(frames):
         row_move, column_move, space_press = read_controls(canvas)
+        row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
+        column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
+        row_speed, column_speed = update_speed(row_speed, column_speed, row_move, column_move)
+
+        for obstacle in obstacles:
+            if obstacle.has_collision(row, column, ship_size_row, ship_size_column):
+                await explode(canvas, row, column)
+                await show_gameover(canvas, center_row, center_column)
+                return obstacles_in_last_collisions.remove(obstacle)
+
+        if space_press and START_YEAR >= GUN_GET_YEAR:
+            shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
+            coroutines.append(shoot)
+
         for game_cycle in range(2):
-            row_speed, column_speed = update_speed(row_speed, column_speed, row_move, column_move)
             row, column = row + row_speed, column + column_speed
-            row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
-            column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
-
-            for obstacle in obstacles:
-                if obstacle.has_collision(row, column, ship_size_row, ship_size_column):
-                    await explode(canvas, row, column)
-                    await show_gameover(canvas, center_row, center_column)
-                    return obstacles_in_last_collisions.remove(obstacle)
-
-            if space_press and START_YEAR >= GUN_GET_YEAR:
-                shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
-                coroutines.append(shoot)
-
             draw_frame(canvas, row, column, frame)
-            await asyncio.sleep(0)
+            await sleep()
             draw_frame(canvas, row, column, frame, negative=True)
 
 
