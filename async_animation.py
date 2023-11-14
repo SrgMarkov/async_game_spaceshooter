@@ -15,13 +15,12 @@ from physics import update_speed
 TIC_TIMEOUT = 0.1
 STARS_SYMBOLS = ['+', '*', '.', ':']
 STARS_COUNT = 100
-START_YEAR = 1957
 GUN_GET_YEAR = 2020
 
 coroutines = []
 obstacles = []
 obstacles_in_last_collisions = []
-
+year = 1957
 
 
 async def sleep(tics=1):
@@ -108,7 +107,7 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
                 await show_gameover(canvas, center_row, center_column)
                 return obstacles_in_last_collisions.remove(obstacle)
 
-        if space_press and START_YEAR >= GUN_GET_YEAR:
+        if space_press and year >= GUN_GET_YEAR:
             shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
             coroutines.append(shoot)
 
@@ -151,7 +150,7 @@ async def fill_orbit_with_garbage(canvas, max_column):
         with open(f'animation/trash_frames/{trash_frame}', 'r') as garbage_file:
             garbage_frames.append(garbage_file.read())
     while True:
-        garbage_delay_tics = get_garbage_delay_tics(START_YEAR)
+        garbage_delay_tics = get_garbage_delay_tics(year)
         if garbage_delay_tics:
             garbage_frame = choice(garbage_frames)
             coroutines.append(fly_garbage(canvas, randint(0, max_column),
@@ -173,14 +172,14 @@ async def show_gameover(canvas, center_row, center_column):
 
 async def show_year(canvas, max_row):
     """Show year and information."""
-    global START_YEAR
+    global year
     while True:
         information_line = '                                              '
-        if START_YEAR in PHRASES:
-            information_line = f' - {PHRASES[START_YEAR]}'
+        if year in PHRASES:
+            information_line = f' - {PHRASES[year]}'
         text_line = canvas.derwin(max_row - 2, 2)
-        text_line.addstr(f'Year: {START_YEAR}{information_line}')
-        START_YEAR += 1
+        text_line.addstr(f'Year: {year}{information_line}')
+        year += 1
         await sleep(15)
 
 
