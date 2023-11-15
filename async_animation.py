@@ -203,8 +203,6 @@ def draw(canvas):
                           randint(1, max_column - 1), star_append, star_symbol)
         coroutines.append(coroutine)
 
-    coroutines.append(show_obstacles(canvas, obstacles))
-
     while True:
         for coroutine in coroutines.copy():
             try:
