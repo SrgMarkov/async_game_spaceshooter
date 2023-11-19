@@ -8,7 +8,7 @@ from random import randint, choice
 from curses_tools import draw_frame, read_controls, get_frame_size
 from explosion import explode
 from game_scenario import get_garbage_delay_tics, PHRASES
-from obstacles import Obstacle, show_obstacles
+from obstacles import Obstacle
 from physics import update_speed
 
 
@@ -96,10 +96,20 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
     row_speed = column_speed = 0
 
     for frame in cycle(frames):
-        row_move, column_move, space_press = read_controls(canvas)
-        row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
-        column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
-        row_speed, column_speed = update_speed(row_speed, column_speed, row_move, column_move)
+        for game_cycle in range(2):
+            row_move, column_move, space_press = read_controls(canvas)
+            row = max(0, row + row_move) if row_move < 0 else min(row + row_move, max_row)
+            column = max(0, column + column_move) if column_move < 0 else min(column + column_move, max_column)
+            row_speed, column_speed = update_speed(row_speed, column_speed, row_move, column_move)
+            row, column = row + row_speed, column + column_speed
+
+            if space_press and year >= GUN_GET_YEAR:
+                shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
+                coroutines.append(shoot)
+
+            draw_frame(canvas, row, column, frame)
+            await sleep()
+            draw_frame(canvas, row, column, frame, negative=True)
 
         for obstacle in obstacles:
             if obstacle.has_collision(row, column, ship_size_row, ship_size_column):
@@ -107,15 +117,6 @@ async def animate_spaceship(canvas, row, column, max_row, max_column):
                 await show_gameover(canvas, center_row, center_column)
                 return obstacles_in_last_collisions.remove(obstacle)
 
-        if space_press and year >= GUN_GET_YEAR:
-            shoot = fire(canvas, row, column + ship_size_column / 2, rows_speed=-5)
-            coroutines.append(shoot)
-
-        for game_cycle in range(2):
-            row, column = row + row_speed, column + column_speed
-            draw_frame(canvas, row, column, frame)
-            await sleep()
-            draw_frame(canvas, row, column, frame, negative=True)
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
